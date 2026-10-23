@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#285b45">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="単語リズム">
+<title>単語リズム — 個人用英単語帳</title>
+<style>
+:root{--bg:#f7f7f4;--card:#fff;--ink:#20231f;--muted:#69716a;--line:#e0e4dc;--accent:#285b45;--soft:#e8f1eb;--bad:#a33b32;--warn:#986317}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;line-height:1.5}
+header{padding:22px 18px 14px;max-width:760px;margin:auto}h1{font-size:25px;margin:0 0 4px}header p{margin:0;color:var(--muted);font-size:14px}
+main{max-width:760px;margin:auto;padding:0 14px 44px}.tabs{display:flex;gap:7px;overflow-x:auto;padding:8px 0 14px}.tab{border:1px solid var(--line);background:var(--card);padding:10px 13px;border-radius:999px;white-space:nowrap;font-size:14px;color:var(--ink)}.tab.active{background:var(--accent);border-color:var(--accent);color:#fff}
+.panel{display:none}.panel.active{display:block}.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin:0 0 12px;box-shadow:0 2px 8px #17251a08}.card h2{font-size:18px;margin:0 0 12px}.muted{color:var(--muted);font-size:13px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.stat{background:var(--soft);border-radius:12px;padding:12px}.stat strong{display:block;font-size:24px}.stat span{font-size:12px;color:var(--muted)}
+label{display:block;font-size:13px;font-weight:600;margin:10px 0 5px}input,textarea,select{width:100%;font:inherit;padding:11px 12px;border:1px solid #cfd5cc;border-radius:10px;background:white;color:var(--ink)}textarea{min-height:66px;resize:vertical}.btn{border:0;border-radius:10px;padding:11px 14px;background:var(--accent);color:white;font:inherit;font-weight:600;cursor:pointer}.btn.secondary{background:#edf0eb;color:var(--ink);border:1px solid var(--line)}.btn.danger{background:#fae9e6;color:var(--bad)}.btn:disabled{opacity:.45}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.word{font-size:28px;font-weight:750;overflow-wrap:anywhere}.meaning{font-size:21px;margin-top:12px}.quizbox{text-align:center;padding:26px 14px}.quizbox .muted{margin-bottom:8px}.answer{margin-top:18px;text-align:left;background:#f4f6f2;border-radius:12px;padding:14px}.rating{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:14px}.rating button{padding:12px 4px;border:1px solid var(--line);border-radius:10px;background:white;font:inherit}.rating button:first-child{color:var(--bad)}.rating button:nth-child(2){color:var(--warn)}.rating button:last-child{color:var(--accent)}.listrow{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;padding:12px 0;border-bottom:1px solid var(--line)}.listrow:last-child{border-bottom:0}.pill{display:inline-block;border-radius:999px;background:#edf0eb;padding:3px 8px;font-size:12px;color:var(--muted)}.pill.bad{background:#fae9e6;color:var(--bad)}.empty{text-align:center;padding:24px 12px;color:var(--muted)}.smallbtn{font-size:12px;padding:6px 9px;border-radius:8px}.progress{height:7px;background:#e8ebe5;border-radius:99px;overflow:hidden;margin:10px 0}.progress div{height:100%;background:var(--accent);width:0}.note{font-size:12px;color:var(--muted);line-height:1.6}.hidden{display:none!important}
+@media(min-width:560px){.grid{grid-template-columns:repeat(4,1fr)}}
+</style>
+</head>
+<body>
+<header><h1>単語リズム</h1><p>自分用の英単語帳 · 学習データはこのブラウザ内に保存</p></header>
+<main>
+<nav class="tabs" aria-label="メニュー">
+<button class="tab active" data-tab="home">概要</button><button class="tab" data-tab="quiz">単語テスト</button><button class="tab" data-tab="add">単語登録</button><button class="tab" data-tab="words">単語一覧</button><button class="tab" data-tab="analysis">苦手分析</button>
+</nav>
+<section id="home" class="panel active">
+<div class="grid">
+<div class="stat"><strong id="sTotal">0</strong><span>登録単語</span></div><div class="stat"><strong id="sDue">0</strong><span>今日の復習</span></div><div class="stat"><strong id="sMastered">0</strong><span>定着判定済み</span></div><div class="stat"><strong id="sAccuracy">—</strong><span>累計正答率</span></div>
+</div>
+<div class="card" style="margin-top:12px"><h2>今日やること</h2><p id="homeMessage" class="muted">単語を登録すると、ここに復習予定が表示されます。</p><div class="actions"><button class="btn" onclick="startQuiz('due')">復習テストを始める</button><button class="btn secondary" onclick="showTab('add')">単語を登録</button></div></div>
+<div class="card"><h2>定着の判定ルール</h2><p class="muted">「覚えた」を一度押しただけでは定着扱いにしません。正解するたびに復習間隔を延ばし、異なる日に3回連続で「即答」できた単語を定着と判定します。間違えたら短い間隔に戻します。</p></div>
+<div class="card"><h2>バックアップ</h2><p class="muted">データはこのブラウザ内に保存されます。ブラウザのデータ消去や端末変更に備え、定期的に書き出してください。</p><div class="actions"><button class="btn secondary" onclick="exportData()">データを書き出す</button><label class="btn secondary" style="display:inline-flex;align-items:center;margin:0;cursor:pointer">データを読み込む<input id="importFile" type="file" accept=".json,application/json" style="display:none" onchange="importData(event)"></label></div></div>
+</section>
+<section id="quiz" class="panel">
+<div class="card"><div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><h2 style="margin:0">単語テスト</h2><span id="quizCount" class="pill">待機中</span></div>
+<div class="actions"><button class="btn secondary" onclick="startQuiz('due')">復習予定</button><button class="btn secondary" onclick="startQuiz('all')">全単語</button><button class="btn secondary" onclick="startQuiz('weak')">苦手単語</button></div>
+<div id="quizArea" class="empty">テスト形式を選んでください。</div></div>
+</section>
+<section id="add" class="panel">
+<div class="card"><h2 id="formTitle">単語を登録</h2><form id="wordForm">
+<input type="hidden" id="editId"><label for="english">英単語・熟語 *</label><input id="english" required maxlength="150" placeholder="例：maintain">
+<label for="meaning">日本語の意味 *</label><input id="meaning" required maxlength="300" placeholder="例：維持する">
+<label for="example">例文・メモ（任意）</label><textarea id="example" maxlength="1000" placeholder="例：maintain a healthy lifestyle"></textarea>
+<div class="actions"><button class="btn" type="submit">保存する</button><button class="btn secondary" type="button" onclick="resetForm()">入力をクリア</button></div></form>
+<p class="note">銀フレの単語は、手元の本を見ながら必要なものを自分で登録してください。意味や例文は自分用の短いメモでも構いません。</p></div>
+</section>
+<section id="words" class="panel">
+<div class="card"><h2>登録単語</h2><input id="searchWords" placeholder="英単語・意味で検索" oninput="renderWords()"><div id="wordList" style="margin-top:8px"></div></div>
+</section>
+<section id="analysis" class="panel">
+<div class="card"><h2>苦手単語分析</h2><p class="muted">間違いが多い単語、即答できていない単語を優先表示します。</p><div id="weakList"></div></div>
+<div class="card"><h2>学習記録</h2><div id="historyStats" class="muted">まだ記録がありません。</div></div>
+</section>
+</main>
+<script>
+const KEY='wordRhythmData_v1';
+let data={words:[],events:[]}, queue=[], qIndex=0, current=null, revealed=false, sessionStart=0;
+const $=id=>document.getElementById(id);
+const today=()=>{const d=new Date();d.setHours(0,0,0,0);return d.getTime()};
+const datePlus=(days)=>today()+days*86400000;
+const fmtDate=t=>new Date(t).toLocaleDateString('ja-JP',{month:'numeric',day:'numeric'});
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function load(){try{const raw=localStorage.getItem(KEY);if(raw){const parsed=JSON.parse(raw);if(parsed&&Array.isArray(parsed.words))data=parsed;}}catch(e){alert('保存データを読み込めませんでした。バックアップJSONを確認してください。'});}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(data));}catch(e){alert('保存できませんでした。ブラウザの保存領域を確認してください。');}}
+function getWord(id){return data.words.find(w=>w.id===id)}
+function due(w){return !w.nextReview||w.nextReview<=today()}
+function accuracy(){const attempts=data.events.length;if(!attempts)return '—';const right=data.events.filter(e=>e.result!=='again').length;return Math.round(right/attempts*100)+'%'}
+function renderHome(){const dueN=data.words.filter(due).length;const mastered=data.words.filter(w=>w.streak>=3).length;$('sTotal').textContent=data.words.length;$('sDue').textContent=dueN;$('sMastered').textContent=mastered;$('sAccuracy').textContent=accuracy();$('homeMessage').textContent=data.words.length?`登録 ${data.words.length}語。今日の復習対象は ${dueN}語です。${dueN===0?'次の復習予定：'+fmtDate(Math.min(...data.words.map(w=>w.nextReview||today()))):'まずは復習予定から始めましょう。'}`:'単語を登録すると、ここに復習予定が表示されます。'}
+function showTab(name){document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.tab===name));document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active',p.id===name));if(name==='home')renderHome();if(name==='words')renderWords();if(name==='analysis')renderAnalysis();if(name==='quiz'&&!current)$('quizArea').innerHTML='<div class="empty">テスト形式を選んでください。</div>';window.scrollTo({top:0,behavior:'smooth'})}
+document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.tab)));
+function resetForm(){$('wordForm').reset();$('editId').value='';$('formTitle').textContent='単語を登録'}
+$('wordForm').addEventListener('submit',e=>{e.preventDefault();const id=$('editId').value;const english=$('english').value.trim(),meaning=$('meaning').value.trim(),example=$('example').value.trim();if(!english||!meaning)return;const duplicate=data.words.find(w=>w.english.toLowerCase()===english.toLowerCase()&&w.id!==id);if(duplicate&&!confirm('同じ英単語が登録済みです。重複して登録しますか？'))return;if(id){const w=getWord(id);if(w){w.english=english;w.meaning=meaning;w.example=example}}else data.words.push({id:crypto.randomUUID?crypto.randomUUID():String(Date.now())+Math.random(),english,meaning,example,created:Date.now(),nextReview:today(),streak:0,interval:0,attempts:0,correct:0,wrong:0,lastSeen:0,lastResult:'new'});save();resetForm();renderHome();alert(id?'単語を更新しました。':'単語を登録しました。');showTab('words')});
+function renderWords(){const q=$('searchWords').value.trim().toLowerCase();const ws=data.words.filter(w=>(w.english+' '+w.meaning+' '+w.example).toLowerCase().includes(q));$('wordList').innerHTML=ws.length?ws.map(w=>`<div class="listrow"><div style="min-width:0;flex:1"><strong>${esc(w.english)}</strong><div>${esc(w.meaning)}</div><div class="muted">${w.streak>=3?'定着判定済み':`連続即答 ${w.streak}/3`} · 次回 ${w.nextReview?fmtDate(w.nextReview):'未設定'}</div></div><div class="actions" style="margin:0;flex-direction:column"><button class="btn secondary smallbtn" onclick="editWord('${w.id}')">編集</button><button class="btn danger smallbtn" onclick="deleteWord('${w.id}')">削除</button></div></div>`).join(''):'<div class="empty">該当する単語がありません。</div>'}
+function editWord(id){const w=getWord(id);if(!w)return;$('editId').value=id;$('english').value=w.english;$('meaning').value=w.meaning;$('example').value=w.example||'';$('formTitle').textContent='単語を編集';showTab('add')}
+function deleteWord(id){const w=getWord(id);if(w&&confirm(`「${w.english}」を削除しますか？学習記録も削除されます。`)){data.words=data.words.filter(x=>x.id!==id);data.events=data.events.filter(e=>e.id!==id);save();renderWords();renderHome();renderAnalysis()}}
+function startQuiz(mode){let ws=data.words.slice();if(mode==='due')ws=ws.filter(due);if(mode==='weak')ws=ws.filter(w=>w.wrong>0||w.streak<1).sort((a,b)=>(b.wrong-b.correct)-(a.wrong-a.correct));if(!ws.length){showTab('quiz');$('quizArea').innerHTML='<div class="empty">'+(data.words.length?'この条件の単語はありません。別のテスト形式を選んでください。':'先に「単語登録」から単語を追加してください。')+'</div>';$('quizCount').textContent='0語';current=null;return}queue=ws.map(w=>w.id).sort(()=>Math.random()-.5);qIndex=0;sessionStart=Date.now();current=null;showTab('quiz');showQuestion()}
+function showQuestion(){if(qIndex>=queue.length){current=null;$('quizCount').textContent='完了';$('quizArea').innerHTML=`<div class="quizbox"><h2>テスト終了</h2><div class="word">${qIndex}語を出題しました</div><p class="muted">回答結果は復習予定と苦手分析に反映されています。</p><div class="actions" style="justify-content:center"><button class="btn" onclick="startQuiz('due')">復習予定を続ける</button><button class="btn secondary" onclick="showTab('home')">概要に戻る</button></div></div>`;renderHome();renderAnalysis();return}current=getWord(queue[qIndex]);if(!current){qIndex++;showQuestion();return}revealed=false;$('quizCount').textContent=`${qIndex+1} / ${queue.length}`;$('quizArea').innerHTML=`<div class="quizbox"><div class="muted">英単語の意味を思い出してから答えを表示してください</div><div class="word">${esc(current.english)}</div><button class="btn" style="margin-top:20px" onclick="revealAnswer()">答えを表示</button><div id="answerBox" class="answer hidden"><div class="meaning">${esc(current.meaning)}</div>${current.example?`<p class="muted">${esc(current.example)}</p>`:''}<p class="note">自分で意味を思い出せたか、厳しめに判定してください。</p><div class="rating"><button onclick="rateWord('again')">×<br><small>分からない</small></button><button onclick="rateWord('hard')">△<br><small>迷った</small></button><button onclick="rateWord('good')">○<br><small>即答できた</small></button></div></div></div>`}
+function revealAnswer(){revealed=true;$('answerBox').classList.remove('hidden')}
+function rateWord(result){if(!current||!revealed)return;const w=current;w.attempts=(w.attempts||0)+1;w.lastSeen=Date.now();w.lastResult=result;let days=1;if(result==='again'){w.wrong=(w.wrong||0)+1;w.correct=w.correct||0;w.streak=0;w.interval=0;days=1}else if(result==='hard'){w.correct=(w.correct||0)+1;w.streak=0;w.interval=Math.max(1,Math.floor((w.interval||1)*1.3));days=Math.min(w.interval,3)}else{w.correct=(w.correct||0)+1;w.streak=(w.streak||0)+1;const intervals=[1,3,7,14,30,60];w.interval=intervals[Math.min(w.streak-1,intervals.length-1)];days=w.interval}w.nextReview=datePlus(days);data.events.push({id:w.id,result,date:Date.now()});save();qIndex++;showQuestion()}
+function renderAnalysis(){const ws=data.words.slice().sort((a,b)=>{const score=w=>(w.wrong||0)*2+(w.lastResult==='hard'?1:0)-(w.streak||0)*.3;return score(b)-score(a)}).filter(w=>w.attempts>0).slice(0,20);$('weakList').innerHTML=ws.length?ws.map(w=>`<div class="listrow"><div style="flex:1"><strong>${esc(w.english)}</strong><div>${esc(w.meaning)}</div><div class="muted">正解 ${w.correct||0}回 / 間違い ${w.wrong||0}回 · 連続即答 ${w.streak||0}</div></div><span class="pill ${w.lastResult==='again'?'bad':''}">${w.lastResult==='again'?'要復習':w.lastResult==='hard'?'迷いやすい':w.streak>=3?'定着':'学習中'}</span></div>`).join(''):'<div class="empty">テストをすると、苦手単語がここに表示されます。</div>';const n=data.events.length;const last=data.events.length?Math.max(...data.events.map(e=>e.date)):0;$('historyStats').textContent=n?`累計回答数：${n}回。最後に学習した日：${new Date(last).toLocaleDateString('ja-JP')}。正答率は概要に表示しています。`:'まだ記録がありません。'}
+function exportData(){const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='word-rhythm-backup.json';a.click();URL.revokeObjectURL(url)}
+function importData(e){const file=e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=()=>{try{const v=JSON.parse(reader.result);if(!v||!Array.isArray(v.words)||!Array.isArray(v.events))throw Error();if(confirm('現在のデータを読み込んだデータで置き換えますか？')){data=v;save();renderHome();renderWords();renderAnalysis();alert('読み込みました。')}}catch(err){alert('形式が正しいバックアップJSONではありません。')}e.target.value=''};reader.readAsText(file)}
+load();renderHome();
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./service-worker.js').catch(err => {
+      console.warn('オフライン機能の登録に失敗しました:', err);
+    });
+  });
+}
+</script>
+</body>
+</html>
